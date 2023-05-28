@@ -1,0 +1,64 @@
+service: dio-acacio-aws-project
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  lambdaHashingVersion: '20201221'
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:GetItem
+            - dynamodb:Scan
+          Resource: "arn:aws:dynamodb:us-east-1:992262616613:table/PaperTypes"
+
+functions:
+  api:
+    handler: src/index.handler
+    events:
+      - httpApi:
+          path: /
+          method: get
+  insertPaper:
+    handler: src/insertPaper.handler
+    events:
+      - httpApi:
+          path: /insertPaper
+          method: put
+  fetchPapers:
+    handler: src/fetchPapers.handler
+    events:
+      - httpApi:
+          path: /fetchPapers
+          method: get
+  fetchPaper:
+    handler: src/fetchPaper.handler
+    events:
+      - httpApi:
+          path: /fetchPaper/{id}
+          method: get
+  updatePaper:
+    handler: src/updatePaper.handler
+    events:
+      - httpApi:
+          path: /updatePaper/{id}
+          method: put
+
+resources:
+  Resources:
+    PaperTypesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: PaperTypes
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
